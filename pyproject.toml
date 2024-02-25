@@ -1,0 +1,88 @@
+[tool.poetry]
+name = "aircloud-hass"
+version = "0.1.0"
+description = "A home assistant integration to support hitachi aircloud HVAC"
+keywords = ["aircloud", "SPX-WFG"]
+authors = ["Yann Le Moigne <ylemoigne@javatic.fr>"]
+readme = "README.md"
+#license = {file = "LICENSE.txt"}
+homepage = "https://github.com/ylemoigne/aircloud-hass"
+repository = "https://github.com/ylemoigne/aircloud-hass"
+packages = [
+    { include = "aircloud", from = "custom_components" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+homeassistant = "^2024.2.3"
+aircloudy = { path = "../aircloudy/", develop = false }
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.0.1"
+pytest-httpserver = "^1.0.9"
+trustme = "^1.1.0"
+coverage = "^7.4.2"
+pytest-asyncio = "^0.23.5"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.2.2"
+taskipy = "^1.12.2"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib", ]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "F",
+    "E", "W",
+    "I",
+    "UP",
+    "ANN",
+    "ASYNC",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "FA",
+    "G",
+    "INP",
+    "PIE",
+    "T20",
+    "PT", #pytest
+    "SIM",
+    "RSE",
+    "RET",
+    "SIM",
+    "ARG",
+    "TD",
+    "FIX",
+    "ERA",
+    "PL",
+    "LOG"
+    ]
+ignore=["ANN101", "ANN102", "PLR2004", "PLR0912", "PLR0913", "TD003", "UP007", "COM812"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.taskipy.tasks]
+types = "mypy ./aircloudy"
+
+format = "ruff format ./aircloudy"
+check = "ruff check ./aircloudy"
+lint = "task format && task check"
+
+test = "pytest tests/**/test_*.py"
+test-with-log = "pytest tests/**/test_*.py --log-cli-level=debug"
+coverage = "coverage run -m pytest"
+quality = "task types && task lint && task test"
