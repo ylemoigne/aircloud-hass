@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import logging
 
-from aircloudy import HitachiAirCloud, InteriorUnit
+from aircloudy import HitachiAirCloud, InteriorUnit, FanSpeed, FanSwing
 
 from homeassistant import config_entries
 from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     HVACMode,
+    HVACAction
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
@@ -42,7 +43,7 @@ def handle_changes(
     changes: dict[int, tuple[InteriorUnit | None, InteriorUnit | None]],
     entities_by_id: dict[int, HitachiAcUnit],
 ) -> None:
-    for id, (old, new) in changes:
+    for id, (old, new) in changes.items():
         if old is None:
             _LOGGER.warning("Unit %d disapeared", id)
             pass
@@ -54,6 +55,7 @@ def handle_changes(
 
 
 class HitachiAcUnit(ClimateEntity):
+    _enable_turn_on_off_backwards_compatibility = False
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.FAN_MODE
@@ -127,6 +129,8 @@ class HitachiAcUnit(ClimateEntity):
     @property
     def hvac_mode(self) -> HVACMode | None:
         "Required	The current operation (e.g. heat, cool, idle). Used to determine state."
+        if self._interior_unit.power=="OFF":
+            return HVACMode.OFF
         match self._interior_unit.mode:
             case "AUTO":
                 return HVACMode.HEAT_COOL
@@ -145,6 +149,7 @@ class HitachiAcUnit(ClimateEntity):
     def hvac_modes(self) -> list[HVACMode]:
         "Required	List of available operation modes. See below."
         return [
+            HVACMode.OFF,
             HVACMode.HEAT_COOL,
             HVACMode.COOL,
             HVACMode.DRY,
@@ -237,24 +242,26 @@ class HitachiAcUnit(ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
         match hvac_mode:
+            case HVACMode.OFF:
+                await self._ac.set(self._interior_unit.id, power="OFF")
             case HVACMode.HEAT_COOL:
-                await self._ac.set(self._interior_unit.id, operating_mode="AUTO")
+                await self._ac.set(self._interior_unit.id, mode="AUTO", power="ON")
             case HVACMode.COOL:
-                await self._ac.set(self._interior_unit.id, operating_mode="COOLING")
+                await self._ac.set(self._interior_unit.id, mode="COOLING", power="ON")
             case HVACMode.DRY:
-                await self._ac.set(self._interior_unit.id, operating_mode="DE_HUMIDIFY")
+                await self._ac.set(self._interior_unit.id, mode="DE_HUMIDIFY", power="ON")
             case HVACMode.FAN_ONLY:
-                await self._ac.set(self._interior_unit.id, operating_mode="FAN")
+                await self._ac.set(self._interior_unit.id, mode="FAN", power="ON")
             case HVACMode.HEAT:
-                await self._ac.set(self._interior_unit.id, operating_mode="HEATING")
+                await self._ac.set(self._interior_unit.id, mode="HEATING", power="ON")
             case _:
                 raise Exception(f"Unmanaged hvac_mode {hvac_mode}")
 
-    async def async_set_fan_mode(self, fan_mode):
+    async def async_set_fan_mode(self, fan_mode:FanSpeed):
         """Set new target fan mode."""
         await self._ac.set(self._interior_unit.id, fan_speed=fan_mode)
 
-    async def async_set_swing_mode(self, swing_mode):
+    async def async_set_swing_mode(self, swing_mode:FanSwing):
         """Set new target swing operation."""
         await self._ac.set(self._interior_unit.id, fan_swing=swing_mode)
 
