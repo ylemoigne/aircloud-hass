@@ -13,12 +13,16 @@ from homeassistant.const import (
     ATTR_TEMPERATURE,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity
+)
 
 from .const import DOMAIN
+from .coordinator import Coordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,11 +34,13 @@ async def async_setup_entry(
 ) -> None:
     """Set up entry."""
     ac = hass.data[DOMAIN][entry.entry_id]
-    entities_by_id = {iu.id: HitachiAcUnit(ac, iu) for iu in ac.interior_units}
+    coordinator = Coordinator(hass, ac)
+
+    entities_by_id = {iu.id: HitachiAcUnit(coordinator, ac, iu) for iu in ac.interior_units}
     async_add_entities(list(entities_by_id.values()))
 
 
-class HitachiAcUnit(ClimateEntity):
+class HitachiAcUnit(CoordinatorEntity, ClimateEntity):
     _enable_turn_on_off_backwards_compatibility = False
     _attr_supported_features = (
             ClimateEntityFeature.TARGET_TEMPERATURE
@@ -61,14 +67,22 @@ class HitachiAcUnit(ClimateEntity):
     _attr_target_temperature_low = 16
     _attr_target_temperature_step = 1
 
+    _coordinator: Coordinator
     _ac: HitachiAirCloud
     _interior_unit: InteriorUnit
 
-    def __init__(self, ac: HitachiAirCloud, interior_unit: InteriorUnit) -> None:
+    def __init__(self, coordinator: Coordinator, ac: HitachiAirCloud, interior_unit: InteriorUnit) -> None:
+        super().__init__(coordinator)
+        self._coordinator = coordinator
         self._ac = ac
         self._interior_unit = interior_unit
-        self._interior_unit.on_changes = self.async_write_ha_state
+        self._interior_unit.on_changes = lambda _: self.async_write_ha_state()
         self._attr_unique_id = f"climate.{self._interior_unit.id}"
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self.async_write_ha_state()
 
     @property
     def device_info(self) -> DeviceInfo:
