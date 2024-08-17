@@ -119,14 +119,14 @@ class HitachiAcUnit(CoordinatorEntity, ClimateEntity):
                 return HVACMode.HEAT_COOL
             case "COOLING":
                 return HVACMode.COOL
-            case "DE_HUMIDIFY":
+            case "DRY":
                 return HVACMode.DRY
             case "FAN":
                 return HVACMode.FAN_ONLY
             case "HEATING":
                 return HVACMode.HEAT
             case _:
-                raise Exception(f"Unexpected mode {self._interior_unit.operating_mode}")
+                raise Exception(f"Unexpected mode '{self._interior_unit.operating_mode}'")
 
     # @property
     # def max_temp(self)->	float:
@@ -176,7 +176,7 @@ class HitachiAcUnit(CoordinatorEntity, ClimateEntity):
                     raise HomeAssistantError(f"Failed to set {self.friendly_name} mode to COOLING") from e
             case HVACMode.DRY:
                 try:
-                    await self._interior_unit.send_command(mode="DE_HUMIDIFY", power="ON")
+                    await self._interior_unit.send_command(mode="DRY", power="ON")
                 except CommandFailedException as e:
                     raise HomeAssistantError(f"Failed to set {self.friendly_name} mode to DE_HUMIDIFY") from e
             case HVACMode.FAN_ONLY:
