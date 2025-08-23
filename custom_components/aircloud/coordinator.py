@@ -9,10 +9,11 @@ from homeassistant.helpers.update_coordinator import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class Coordinator(DataUpdateCoordinator):
     aircloud: HitachiAirCloud
 
-    def __init__(self, hass: HomeAssistant, aircloud: HitachiAirCloud):
+    def __init__(self, hass: HomeAssistant, aircloud: HitachiAirCloud) -> None:
         super().__init__(
             hass,
             _LOGGER,
@@ -23,13 +24,14 @@ class Coordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         # try:
-            # Note: asyncio.TimeoutError and aiohttp.ClientError are already
-            # handled by the data update coordinator.
-            # async with async_timeout.timeout(10):
-                return await self.aircloud.update_all()
-        # except ApiAuthError as err:
-        #     # Raising ConfigEntryAuthFailed will cancel future updates
-        #     # and start a config flow with SOURCE_REAUTH (async_step_reauth)
-        #     raise ConfigEntryAuthFailed from err
-        # except ApiError as err:
-        #     raise UpdateFailed(f"Error communicating with API: {err}")
+        # Note: asyncio.TimeoutError and aiohttp.ClientError are already
+        # handled by the data update coordinator.
+        # async with async_timeout.timeout(10):
+        return await self.aircloud.update_all()
+
+    # except ApiAuthError as err:
+    #     # Raising ConfigEntryAuthFailed will cancel future updates
+    #     # and start a config flow with SOURCE_REAUTH (async_step_reauth)
+    #     raise ConfigEntryAuthFailed from err
+    # except ApiError as err:
+    #     raise UpdateFailed(f"Error communicating with API: {err}")

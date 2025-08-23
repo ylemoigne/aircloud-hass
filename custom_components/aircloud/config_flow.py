@@ -1,4 +1,5 @@
 """Config flow for Hitachi Air Cloud integration."""
+
 from __future__ import annotations
 
 import logging
@@ -28,9 +29,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is not None:
@@ -42,9 +41,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_EMAIL],
                     user_input[CONF_PASSWORD],
                 )
-                return self.async_create_entry(
-                    title=user_input[CONF_EMAIL], data=user_input
-                )
+                return self.async_create_entry(title=user_input[CONF_EMAIL], data=user_input)
             except aircloudy.ConnectionFailed:
                 errors["base"] = "connection_failed"
             except aircloudy.AuthenticationFailedException:
@@ -53,6 +50,4 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
 
-        return self.async_show_form(
-            step_id="user", data_schema=CONFIG_SCHEMA, errors=errors
-        )
+        return self.async_show_form(step_id="user", data_schema=CONFIG_SCHEMA, errors=errors)

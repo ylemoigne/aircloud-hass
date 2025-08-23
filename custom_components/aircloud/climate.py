@@ -4,11 +4,7 @@ import logging
 
 from aircloudy import HitachiAirCloud, InteriorUnit, FanSpeed, FanSwing, CommandFailedException
 from homeassistant import config_entries
-from homeassistant.components.climate import (
-    ClimateEntity,
-    ClimateEntityFeature,
-    HVACMode
-)
+from homeassistant.components.climate import ClimateEntity, ClimateEntityFeature, HVACMode
 from homeassistant.const import (
     ATTR_TEMPERATURE,
     UnitOfTemperature,
@@ -17,9 +13,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import Coordinator
@@ -28,9 +22,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: config_entries.ConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    entry: config_entries.ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up entry."""
     ac = hass.data[DOMAIN][entry.entry_id]
@@ -43,11 +37,11 @@ async def async_setup_entry(
 class HitachiAcUnit(CoordinatorEntity, ClimateEntity):
     _enable_turn_on_off_backwards_compatibility = False
     _attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE
-            | ClimateEntityFeature.FAN_MODE
-            | ClimateEntityFeature.SWING_MODE
-            | ClimateEntityFeature.TURN_ON
-            | ClimateEntityFeature.TURN_OFF
+        ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.FAN_MODE
+        | ClimateEntityFeature.SWING_MODE
+        | ClimateEntityFeature.TURN_ON
+        | ClimateEntityFeature.TURN_OFF
     )
 
     _attr_should_poll = False
@@ -155,9 +149,7 @@ class HitachiAcUnit(CoordinatorEntity, ClimateEntity):
             case "FAHRENHEIT":
                 return UnitOfTemperature.FAHRENHEIT
             case _:
-                raise Exception(
-                    f"Unexpected temperature_unit {self._ac.temperature_unit}"
-                )
+                raise Exception(f"Unexpected temperature_unit {self._ac.temperature_unit}")
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
