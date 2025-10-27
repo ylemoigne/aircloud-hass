@@ -85,7 +85,6 @@ class HitachiAcUnit(CoordinatorEntity, ClimateEntity):
             name=f"HVAC {self._interior_unit.name}",
             manufacturer=self._interior_unit.vendor,
             model=self._interior_unit.model_id,
-            via_device=(DOMAIN, self._ac._connection_info.user_profile.email),
         )
 
     @property
