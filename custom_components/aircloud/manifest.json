@@ -13,7 +13,7 @@
   "homekit": {},
   "iot_class": "cloud_push",
   "requirements": [
-    "aircloudy==0.1.13"
+    "aircloudy==0.1.14"
   ],
   "logger": [
     "aircloudy.aircloud",
